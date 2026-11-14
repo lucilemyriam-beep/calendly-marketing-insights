@@ -1,0 +1,79 @@
+import sys
+from awsglue.transforms import *
+from awsglue.utils import getResolvedOptions
+from pyspark.context import SparkContext
+from awsglue.context import GlueContext
+from awsglue.job import Job
+from awsgluedq.transforms import EvaluateDataQuality
+
+args = getResolvedOptions(sys.argv, ['JOB_NAME'])
+sc = SparkContext()
+glueContext = GlueContext(sc)
+spark = glueContext.spark_session
+job = Job(glueContext)
+job.init(args['JOB_NAME'], args)
+
+# Default ruleset used by all target nodes with data quality enabled
+DEFAULT_DATA_QUALITY_RULESET = """
+    Rules = [
+        ColumnCount > 0
+    ]
+"""
+
+# Script generated for node Calendly_Bronze_Source
+Calendly_Bronze_Source_node1794512870727 = glueContext.create_dynamic_frame.from_options(format_options={"multiLine": "false"}, connection_type="s3", format="json", connection_options={"paths": ["s3://calendly-marketing-medallion-593271843946/bronze/calendly/"], "recurse": True}, transformation_ctx="Calendly_Bronze_Source_node1794512870727")
+
+# Script generated for node Change Schema
+ChangeSchema_node1794528256503 = ApplyMapping.apply(frame=Calendly_Bronze_Source_node1794512870727, mappings=[("event", "string", "event", "string"), ("payload.event", "string", "payload.event", "string"), ("payload.invitee.name", "string", "payload.invitee.name", "string"), ("payload.invitee.email", "string", "payload.invitee.email", "string"), ("payload.scheduled_event.start_time", "string", "payload.scheduled_event.start_time", "string"), ("payload.scheduled_event.created_at", "string", "payload.scheduled_event.created_at", "string"), ("payload.scheduled_event.end_time", "string", "payload.scheduled_event.end_time", "string"), ("payload.scheduled_event.event_guests", "array", "payload.scheduled_event.event_guests", "array"), ("payload.scheduled_event.event_memberships", "array", "payload.scheduled_event.event_memberships", "array"), ("payload.scheduled_event.event_type", "string", "payload.scheduled_event.event_type", "string"), ("payload.scheduled_event.invitees_counter.total", "int", "payload.scheduled_event.invitees_counter.total", "int"), ("payload.scheduled_event.invitees_counter.active", "int", "payload.scheduled_event.invitees_counter.active", "int"), ("payload.scheduled_event.invitees_counter.limit", "int", "payload.scheduled_event.invitees_counter.limit", "int"), ("payload.scheduled_event.location.join_url", "string", "payload.scheduled_event.location.join_url", "string"), ("payload.scheduled_event.location.status", "string", "payload.scheduled_event.location.status", "string"), ("payload.scheduled_event.location.type", "string", "payload.scheduled_event.location.type", "string"), ("payload.scheduled_event.location.data.id", "long", "payload.scheduled_event.location.data.id", "long"), ("payload.scheduled_event.location.data.settings.global_dial_in_numbers", "array", "payload.scheduled_event.location.data.settings.global_dial_in_numbers", "array"), ("payload.scheduled_event.location.data.extra.intl_numbers_url", "null", "payload.scheduled_event.location.data.extra.intl_numbers_url", "null"), ("payload.scheduled_event.location.data.password", "string", "payload.scheduled_event.location.data.password", "string"), ("payload.scheduled_event.meeting_notes_html", "null", "payload.scheduled_event.meeting_notes_html", "null"), ("payload.scheduled_event.meeting_notes_plain", "null", "payload.scheduled_event.meeting_notes_plain", "null"), ("payload.scheduled_event.name", "string", "payload.scheduled_event.name", "string"), ("payload.scheduled_event.status", "string", "payload.scheduled_event.status", "string"), ("payload.scheduled_event.updated_at", "string", "payload.scheduled_event.updated_at", "string"), ("payload.scheduled_event.uri", "string", "payload.scheduled_event.uri", "string"), ("payload.scheduled_event.cancellation.canceled_by", "string", "payload.scheduled_event.cancellation.canceled_by", "string"), ("payload.scheduled_event.cancellation.canceler_type", "string", "payload.scheduled_event.cancellation.canceler_type", "string"), ("payload.scheduled_event.cancellation.created_at", "string", "payload.scheduled_event.cancellation.created_at", "string"), ("payload.scheduled_event.cancellation.reason", "null", "payload.scheduled_event.cancellation.reason", "null"), ("payload.cancel_url", "string", "payload.cancel_url", "string"), ("payload.created_at", "string", "payload.created_at", "string"), ("payload.email", "string", "payload.email", "string"), ("payload.first_name", "null", "payload.first_name", "null"), ("payload.invitee_scheduled_by", "string", "payload.invitee_scheduled_by", "string"), ("payload.last_name", "null", "payload.last_name", "null"), ("payload.name", "string", "payload.name", "string"), ("payload.new_invitee", "string", "payload.new_invitee", "string"), ("payload.no_show", "null", "payload.no_show", "null"), ("payload.old_invitee", "string", "payload.old_invitee", "string"), ("payload.payment", "null", "payload.payment", "null"), ("payload.questions_and_answers", "array", "payload.questions_and_answers", "array"), ("payload.reconfirmation", "null", "payload.reconfirmation", "null"), ("payload.reschedule_url", "string", "payload.reschedule_url", "string"), ("payload.rescheduled", "boolean", "payload.rescheduled", "boolean"), ("payload.routing_form_submission", "null", "payload.routing_form_submission", "null"), ("payload.scheduling_method", "null", "payload.scheduling_method", "null"), ("payload.status", "string", "payload.status", "string"), ("payload.text_reminder_number", "string", "payload.text_reminder_number", "string"), ("payload.timezone", "string", "payload.timezone", "string"), ("payload.tracking.utm_campaign", "null", "payload.tracking.utm_campaign", "null"), ("payload.tracking.utm_source", "null", "payload.tracking.utm_source", "null"), ("payload.tracking.utm_medium", "null", "payload.tracking.utm_medium", "null"), ("payload.tracking.utm_content", "null", "payload.tracking.utm_content", "null"), ("payload.tracking.utm_term", "null", "payload.tracking.utm_term", "null"), ("payload.tracking.salesforce_uuid", "null", "payload.tracking.salesforce_uuid", "null"), ("payload.updated_at", "string", "payload.updated_at", "string"), ("payload.uri", "string", "payload.uri", "string"), ("payload.cancellation.canceled_by", "string", "payload.cancellation.canceled_by", "string"), ("payload.cancellation.canceler_type", "string", "payload.cancellation.canceler_type", "string"), ("payload.cancellation.created_at", "string", "payload.cancellation.created_at", "string"), ("payload.cancellation.reason", "null", "payload.cancellation.reason", "null"), ("created_at", "string", "created_at", "string"), ("created_by", "string", "created_by", "string")], transformation_ctx="ChangeSchema_node1794528256503")
+
+# Script generated for node Amazon S3
+EvaluateDataQuality().process_rows(frame=ChangeSchema_node1794528256503, ruleset=DEFAULT_DATA_QUALITY_RULESET, publishing_options={"dataQualityEvaluationContext": "EvaluateDataQuality_node1794527132198", "enableDataQualityResultsPublishing": True}, additional_options={"dataQualityResultsPublishing.strategy": "BEST_EFFORT", "observations.scope": "ALL"})
+
+# Write Silver data as Delta Lake
+from pyspark.sql.functions import (
+    col, to_timestamp, coalesce, lit,
+    when, explode_outer
+)
+from pyspark.sql.types import StringType
+
+# Read the existing Bronze JSON files
+bronze_df = spark.read.json(
+    "s3://calendly-marketing-medallion-593271843946/bronze/calendly/"
+)
+
+# Extract booking information into flat Silver columns
+silver_df = bronze_df.select(
+    col("event").alias("event"),
+    col("created_at").alias("created_at"),
+    col("created_by").alias("created_by"),
+
+    col("payload.uri").alias("invitee_uri"),
+    col("payload.scheduled_event.uri").alias("booking_id"),
+
+    col("payload.scheduled_event.name").alias("meeting_name"),
+    col("payload.scheduled_event.start_time").alias("meeting_start_time"),
+    col("payload.scheduled_event.end_time").alias("meeting_end_time"),
+    col("payload.scheduled_event.status").alias("meeting_status"),
+
+    col("payload.scheduled_event.event_type").alias("event_type"),
+
+    col("payload.scheduled_event.event_memberships").alias("event_memberships"),
+
+    col("payload.tracking").alias("tracking"),
+
+    col("payload.rescheduled").alias("rescheduled"),
+    col("payload.timezone").alias("timezone")
+)
+
+# Write the flattened data into the existing Silver location
+(
+    silver_df.write
+    .format("delta")
+    .mode("overwrite")
+    .option("overwriteSchema", "true")
+    .save(
+        "s3://calendly-marketing-medallion-593271843946/silver/calendly/"
+    )
+)
+
+job.commit()

@@ -1,0 +1,33 @@
+import sys
+from awsglue.transforms import *
+from awsglue.utils import getResolvedOptions
+from pyspark.context import SparkContext
+from awsglue.context import GlueContext
+from awsglue.job import Job
+from awsgluedq.transforms import EvaluateDataQuality
+
+args = getResolvedOptions(sys.argv, ['JOB_NAME'])
+sc = SparkContext()
+glueContext = GlueContext(sc)
+spark = glueContext.spark_session
+job = Job(glueContext)
+job.init(args['JOB_NAME'], args)
+
+# Default ruleset used by all target nodes with data quality enabled
+DEFAULT_DATA_QUALITY_RULESET = """
+    Rules = [
+        ColumnCount > 0
+    ]
+"""
+
+# Script generated for node Marketing_Spend_Bronze_Source
+Marketing_Spend_Bronze_Source_node1794618582531 = glueContext.create_dynamic_frame.from_options(format_options={"multiLine": "false"}, connection_type="s3", format="json", connection_options={"paths": ["s3://calendly-marketing-medallion-593271843946/bronze/marketing_spend/"], "recurse": True}, transformation_ctx="Marketing_Spend_Bronze_Source_node1794618582531")
+
+# Script generated for node Change Schema
+ChangeSchema_node1794625737468 = ApplyMapping.apply(frame=Marketing_Spend_Bronze_Source_node1794618582531, mappings=[("date", "string", "date", "string"), ("channel", "string", "channel", "string"), ("spend", "double", "spend", "double")], transformation_ctx="ChangeSchema_node1794625737468")
+
+# Script generated for node Marketing_Spend_Silver_Target
+EvaluateDataQuality().process_rows(frame=ChangeSchema_node1794625737468, ruleset=DEFAULT_DATA_QUALITY_RULESET, publishing_options={"dataQualityEvaluationContext": "EvaluateDataQuality_node1794621720147", "enableDataQualityResultsPublishing": True}, additional_options={"dataQualityResultsPublishing.strategy": "BEST_EFFORT", "observations.scope": "ALL"})
+Marketing_Spend_Silver_Target_node1794625972612 = glueContext.write_dynamic_frame.from_options(frame=ChangeSchema_node1794625737468, connection_type="s3", format="glueparquet", connection_options={"path": "s3://calendly-marketing-medallion-593271843946/silver/marketing_spend/", "partitionKeys": []}, format_options={"compression": "snappy"}, transformation_ctx="Marketing_Spend_Silver_Target_node1794625972612")
+
+job.commit()

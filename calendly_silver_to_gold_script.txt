@@ -1,0 +1,61 @@
+import sys
+from awsglue.transforms import *
+from awsglue.utils import getResolvedOptions
+from pyspark.context import SparkContext
+from awsglue.context import GlueContext
+from awsglue.job import Job
+from awsgluedq.transforms import EvaluateDataQuality
+from awsglue import DynamicFrame
+
+def sparkSqlQuery(glueContext, query, mapping, transformation_ctx) -> DynamicFrame:
+    for alias, frame in mapping.items():
+        frame.toDF().createOrReplaceTempView(alias)
+    result = spark.sql(query)
+    return DynamicFrame.fromDF(result, glueContext, transformation_ctx)
+args = getResolvedOptions(sys.argv, ['JOB_NAME'])
+sc = SparkContext()
+glueContext = GlueContext(sc)
+spark = glueContext.spark_session
+job = Job(glueContext)
+job.init(args['JOB_NAME'], args)
+
+# Default ruleset used by all target nodes with data quality enabled
+DEFAULT_DATA_QUALITY_RULESET = """
+    Rules = [
+        ColumnCount > 0
+    ]
+"""
+
+# Script generated for node Calendly_Silver_Source
+Calendly_Silver_Source_node1794585385488_df = glueContext.create_data_frame.from_catalog(database="calendly_marketing_db", table_name="calendly")
+Calendly_Silver_Source_node1794585385488 = DynamicFrame.fromDF(Calendly_Silver_Source_node1794585385488_df, glueContext, "Calendly_Silver_Source_node1794585385488")
+
+# Script generated for node Calendly_Gold_Daily_Bookings
+SqlQuery0 = '''
+SELECT
+    TO_DATE(meeting_start_time) AS meeting_date,
+    COUNT(*) AS total_booking_events,
+    COUNT(DISTINCT booking_id) AS unique_bookings,
+    SUM(
+        CASE
+            WHEN event = 'invitee.created' THEN 1
+            ELSE 0
+        END
+    ) AS created_events,
+    SUM(
+        CASE
+            WHEN event = 'invitee.canceled' THEN 1
+            ELSE 0
+        END
+    ) AS cancellation_events
+FROM myDataSource
+WHERE meeting_start_time IS NOT NULL
+GROUP BY TO_DATE(meeting_start_time)
+'''
+Calendly_Gold_Daily_Bookings_node1794585823614 = sparkSqlQuery(glueContext, query = SqlQuery0, mapping = {"myDataSource":Calendly_Silver_Source_node1794585385488}, transformation_ctx = "Calendly_Gold_Daily_Bookings_node1794585823614")
+
+# Script generated for node Calendly_Gold_Target
+EvaluateDataQuality().process_rows(frame=Calendly_Gold_Daily_Bookings_node1794585823614, ruleset=DEFAULT_DATA_QUALITY_RULESET, publishing_options={"dataQualityEvaluationContext": "EvaluateDataQuality_node1794583974600", "enableDataQualityResultsPublishing": True}, additional_options={"dataQualityResultsPublishing.strategy": "BEST_EFFORT", "observations.scope": "ALL"})
+Calendly_Gold_Target_node1794586088350 = glueContext.write_dynamic_frame.from_options(frame=Calendly_Gold_Daily_Bookings_node1794585823614, connection_type="s3", format="glueparquet", connection_options={"path": "s3://calendly-marketing-medallion-593271843946/gold/calendly_daily_bookings/", "partitionKeys": []}, format_options={"compression": "snappy"}, transformation_ctx="Calendly_Gold_Target_node1794586088350")
+
+job.commit()
