@@ -4,6 +4,8 @@ AWS data engineering and Streamlit analytics portfolio project
 
 Live dashboard: Open the deployed Streamlit app 
 https://calendly-marketing-insights-ybz7gq8d8xgmrgl8ysxbdr.streamlit.app/
+<img width="1667" height="1282" alt="image" src="https://github.com/user-attachments/assets/cbd4c983-73ec-4df3-9fd2-cb51cbcea12a" />
+
 
 Project overview
 This project combines marketing advertising spend with Calendly booking activity to demonstrate an AWS data pipeline, SQL analysis, and a deployed interactive Streamlit dashboard. Users can upload CSV exports from Amazon Athena to explore marketing spend and booking trends without providing AWS credentials to the app.
